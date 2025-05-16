@@ -1,0 +1,25 @@
+@import '@fontsource/roboto/300.css';
+@import '@fontsource/roboto/400.css';
+@import '@fontsource/roboto/500.css';
+@import '@fontsource/roboto/700.css';
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+:root{
+    --bg-light-gray: #f5f5f5;
+    --max-w-desktop: 800px;
+    --primary: #1976d2;
+    --hover: #1565c0;
+    --border-color: #e0e0e0;
+    --text-black: #333;
+    --text-gray: #666;
+    --main-title: 32px;
+    --section-title: 18px;
+    --normal-text: 16px;
+    --secondary-text: 14px;
+}

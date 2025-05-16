@@ -37,7 +37,7 @@ function TabPanel(props) {
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState({ task: "", description: "" })
+  const [newTask, setNewTask] = useState({ task: "", description: "" });
   const [isTaskChecked, setIsTaskChecked] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [tabValue, setTabValue] = useState(0);
@@ -129,7 +129,7 @@ function App() {
           fullWidth
           label="Task Title"
           value={newTask.task}
-          onChange={(e) => setNewTask( {...newTask, task: e.target.value})}
+          onChange={(e) => setNewTask({ ...newTask, task: e.target.value })}
           sx={{ mb: 2 }}
         />
         <TextField
@@ -137,7 +137,7 @@ function App() {
           label="Description (optional)"
           value={newTask.description}
           onChange={(e) =>
-            setNewTask({...newTask, description: e.target.value})
+            setNewTask({ ...newTask, description: e.target.value })
           }
           multiline
           rows={2}
@@ -160,9 +160,7 @@ function App() {
         >
           <Tab label={`All (${tasks.length})`} />
           <Tab label={`Active (${tasks.filter((t) => !t.checked).length})`} />
-          <Tab
-            label={`Completed (${tasks.filter((t) => t.checked).length})`}
-          />
+          <Tab label={`Completed (${tasks.filter((t) => t.checked).length})`} />
         </Tabs>
       </Paper>
 
@@ -221,10 +219,11 @@ function App() {
           <ListItem
             key={task._id}
             sx={{
-              backgroundColor: task.completed ? "#f5f5f5" : "white",
+              backgroundColor: task.checked ? "#f5f5f5" : "white",
               mb: 1,
               borderRadius: 1,
               border: "1px solid #e0e0e0",
+              textDecoration: task.checked ? "line-through" : "none",
             }}
           >
             <Checkbox

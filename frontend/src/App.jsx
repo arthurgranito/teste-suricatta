@@ -38,7 +38,7 @@ function TabPanel(props) {
 function App() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({ task: "", description: "" });
-  const [isTaskChecked, setIsTaskChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
@@ -49,10 +49,13 @@ function App() {
 
   const fetchTasks = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.get(`${API_URL}/tasks`);
       setTasks(response.data);
     } catch (error) {
       console.error("Error fetching tasks:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -164,15 +167,33 @@ function App() {
         </Tabs>
       </Paper>
 
-      <TabPanel value={tabValue} index={0}>
-        <TaskList tasks={filteredTasks} />
-      </TabPanel>
-      <TabPanel value={tabValue} index={1}>
-        <TaskList tasks={filteredTasks} />
-      </TabPanel>
-      <TabPanel value={tabValue} index={2}>
-        <TaskList tasks={filteredTasks} />
-      </TabPanel>
+      {isLoading ? (
+        <h1>Loading Data...</h1>
+      ) : (
+        <>
+          {tasks.length == 0 && (
+            <>
+              <h3 style={{ textAlign: "center" }}>
+                No tasks have been added yet...
+              </h3>
+              <h4 style={{ textAlign: "center" }}>Create your first task!</h4>
+            </>
+          )}
+          {tasks.length > 0 && (
+            <>
+              <TabPanel value={tabValue} index={0}>
+                <TaskList tasks={filteredTasks} />
+              </TabPanel>
+              <TabPanel value={tabValue} index={1}>
+                <TaskList tasks={filteredTasks} />
+              </TabPanel>
+              <TabPanel value={tabValue} index={2}>
+                <TaskList tasks={filteredTasks} />
+              </TabPanel>
+            </>
+          )}
+        </>
+      )}
 
       <Dialog
         open={openDialog}
@@ -223,7 +244,6 @@ function App() {
               mb: 1,
               borderRadius: 1,
               border: "1px solid #e0e0e0",
-              textDecoration: task.checked ? "line-through" : "none",
             }}
           >
             <Checkbox
@@ -234,8 +254,8 @@ function App() {
               primary={task.task}
               secondary={task.description}
               sx={{
-                textDecoration: task.completed ? "line-through" : "none",
-                opacity: task.completed ? 0.6 : 1,
+                textDecoration: task.checked ? "line-through" : "none",
+                opacity: task.checked ? 0.6 : 1,
               }}
             />
             <ListItemSecondaryAction>

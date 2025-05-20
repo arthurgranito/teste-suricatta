@@ -19,10 +19,9 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
+import TaskList from "./components/TaskList";
 
 const API_URL = "http://localhost:3001/api";
 
@@ -42,6 +41,8 @@ function App() {
   const [editingTask, setEditingTask] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
+  const [proofFile, setProofFile] = useState(null);
+  const [fileName, setFileName] = useState("");
 
   useEffect(() => {
     fetchTasks();
@@ -73,31 +74,61 @@ function App() {
 
   const updateTask = async () => {
     try {
+      const formData = new FormData();
+      formData.append("task", editingTask.task);
+      formData.append("description", editingTask.description);
+      formData.append("checked", editingTask.checked);
+
+      if (proofFile) {
+        formData.append("proofFile", proofFile);
+        formData.append("proofFileName", fileName);
+      }
+
       const response = await axios.put(
         `${API_URL}/tasks/${editingTask._id}`,
-        editingTask
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
+
       setTasks(
         tasks.map((task) =>
           task._id === editingTask._id ? response.data : task
         )
       );
       setEditingTask(null);
+      setProofFile(null);
+      setFileName("");
       setOpenDialog(false);
     } catch (error) {
       console.error("Error updating task:", error);
     }
   };
 
-  const toggleTaskComplete = async (taskId) => {
+  const toggleTaskComplete = async (taskId, proofFile = null, fileName = "") => {
     const task = tasks.find((t) => t._id === taskId);
     try {
-      const response = await axios.put(`${API_URL}/tasks/${taskId}`, {
-        ...task,
-        checked: !task.checked,
+      const formData = new FormData();
+      formData.append("task", task.task);
+      formData.append("description", task.description);
+      formData.append("checked", !task.checked);
+
+      if (proofFile && fileName) {
+        formData.append("proofFile", proofFile);
+        formData.append("proofFileName", fileName);
+      }
+
+      const response = await axios.put(`${API_URL}/tasks/${taskId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+
       setTasks(tasks.map((t) => (t._id === taskId ? response.data : t)));
-    } catch (error) {
+      setProofFile(null);
+      setFileName("");
+    } catch(error) {
       console.error("Error toggling task:", error);
     }
   };
@@ -182,7 +213,18 @@ function App() {
           {tasks.length > 0 && (
             <>
               <TabPanel value={tabValue} index={0}>
-                <TaskList tasks={filteredTasks} />
+                <TaskList
+                  tasks={filteredTasks}
+                  onCheck={(id, proofFile, fileName) => {
+                    toggleTaskComplete(id, proofFile, fileName);
+                  }}
+                  onUpdate={(task, openDialog) => {
+                    setEditingTask(task);
+                    setOpenDialog(openDialog);
+                  }}
+                  onDelete={deleteTask}
+                  API_URL={API_URL}
+                />
               </TabPanel>
               <TabPanel value={tabValue} index={1}>
                 <TaskList tasks={filteredTasks} />
@@ -232,51 +274,6 @@ function App() {
       </Dialog>
     </Container>
   );
-
-  function TaskList({ tasks }) {
-    return (
-      <List>
-        {tasks.map((task) => (
-          <ListItem
-            key={task._id}
-            sx={{
-              backgroundColor: task.checked ? "#f5f5f5" : "white",
-              mb: 1,
-              borderRadius: 1,
-              border: "1px solid #e0e0e0",
-            }}
-          >
-            <Checkbox
-              checked={task.checked}
-              onChange={() => toggleTaskComplete(task._id)}
-            />
-            <ListItemText
-              primary={task.task}
-              secondary={task.description}
-              sx={{
-                textDecoration: task.checked ? "line-through" : "none",
-                opacity: task.checked ? 0.6 : 1,
-              }}
-            />
-            <ListItemSecondaryAction>
-              <IconButton
-                edge="end"
-                onClick={() => {
-                  setEditingTask(task);
-                  setOpenDialog(true);
-                }}
-              >
-                <EditIcon />
-              </IconButton>
-              <IconButton edge="end" onClick={() => deleteTask(task._id)}>
-                <DeleteIcon />
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
-      </List>
-    );
-  }
 }
 
 export default App;
